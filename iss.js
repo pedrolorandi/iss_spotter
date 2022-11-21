@@ -1,12 +1,3 @@
-/**
- * Makes a single API request to retrieve the user's IP address.
- * Input:
- *   - A callback (to pass back an error or the IP string)
- * Returns (via Callback):
- *   - An error, if any (nullable)
- *   - The IP address as a string (null if error). Example: "162.245.144.188"
- */
-
 const request = require('request');
 
 const fetchMyIP = (callback) => {
@@ -26,7 +17,6 @@ const fetchMyIP = (callback) => {
  
 const fetchCoordsByIp = (ip, callback) => {
   const url = 'http://ipwho.is/';
-  // const url = 'https://ipwho.is/42';
 
   request(url, (error, response, body) => {
     if (error) return callback(error, null);
@@ -43,5 +33,22 @@ const fetchCoordsByIp = (ip, callback) => {
   });
 };
 
+const fetchISSFlyOverTimes = function(coords, callback) {
+  const { latitude, longitude } = coords;
+  const url = `https://iss-flyover.herokuapp.com/json/?lat=${ latitude }&lon=${ longitude }`;
 
-module.exports = { fetchMyIP, fetchCoordsByIp };
+  request(url, (error, response, body) => {
+    if (error) return callback(error, null);
+
+    if (response.statusCode !== 200) {
+      const message = `Status Code ${response.statusCode} when fetching ISS pass times: ${body}`;
+      return callback(Error(message), null);
+    }
+
+    const passes = JSON.parse(body).response;
+
+    return callback(null, passes);
+  });
+};
+
+module.exports = { fetchMyIP, fetchCoordsByIp, fetchISSFlyOverTimes };
